@@ -1,21 +1,84 @@
 import React, { useState, useRef } from "react";
 import Header from "./Header";
 import { checkValidateData } from "../utilis/validate";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile  } from "firebase/auth";
+import {auth} from "../utilis/firebase";
+import { useDispatch } from "react-redux";
+import { addUsers } from "../utilis/userSlice";
+
  
 const Login =()=>{
     const[isSignInForm , setIsSignInForm] = useState(true)
     const [errorMessage , setErrorMessage] = useState()
+    const dispatch = useDispatch();
+
     const email = useRef(null)
     const password = useRef(null)
     const uname = useRef(null)
 
     const handleButtonClick = () =>{
         //validate the form data
-       const message= checkValidateData(email.current.value , password.current.value, uname.current.value );
+       const message= checkValidateData(email.current.value , password.current.value);
+        // uname.current.value
+ 
        setErrorMessage(message);
-       console.log(message);
+       //console.log(message);
+       if(message) return;
+
+       if(!isSignInForm){
+        //Sign Up Logic
+        createUserWithEmailAndPassword(
+            auth,
+             email.current.value,
+              password.current.value
+            )
+        .then((userCredential) => {
+          // Signed up 
+          const user = userCredential.user;
+          updateProfile(user, {
+            displayName: uname.current.value, photoURL: "https://example.com/jane-q-user/profile.jpg"
+          }).then(() => {
+            const {uid, email, displayName, photoURL } = auth.currentUser;
+            dispatch(addUsers({
+              uid:uid, email: email, displayName: displayName, photoURL
+    
+            }));
+    
+
+            // Profile updated!
+
+          }).catch((error) => {
+            // An error occurred
+            setErrorMessage(error.message)
+          });
+          console.log(user);
+       })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setErrorMessage(errorCode+ "_"+errorMessage);
+
+        });
+
+       }
+
+     else{
+
+        //siginIn Logic
+        signInWithEmailAndPassword(auth, 
+          email.current.value, password.current.value)
+  .then((userCredential) => {
+    // Signed in 
+    const user = userCredential.user;
+    
+  })
+  .catch((error) => {
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    setErrorMessage(errorCode+"_"+errorMessage);
+  });
+     }    
     }
-  
     const toggleButtonClick =()=>{
         setIsSignInForm(!isSignInForm)
     }
