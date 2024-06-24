@@ -1,20 +1,19 @@
 import MovieCard from "./MovieCard";
-
 const MovieList = ({title, movies}) => {
-  console.log(movies)
-  const posterPath = movies?.[0]?.poster_path; // using optional chaining
+    console.log(movies);
+    return (
+      <div className="px-6">
+        <h1 className="py-4 font-bold text-xl text-white">{title}</h1>
 
-  return (
-    <div>
-        <div>
-            <h1>{title}</h1>
-            <div>
-              {posterPath && <MovieCard posterPath={posterPath} />} 
-              {/* Only render MovieCard when posterPath is defined */}
-            </div>
-        </div>
-    </div>
-  )
-}
-
-export default MovieList;
+          <div className="flex overflow-x-scroll p3-6">
+              <div className="flex">
+                 { movies && movies.map((movie) => (
+                    <MovieCard key={movie.id} posterPath={movie.poster_path} />
+                  ))} 
+              </div>
+          </div>
+      </div>
+    )
+  }
+  
+  export default MovieList;
